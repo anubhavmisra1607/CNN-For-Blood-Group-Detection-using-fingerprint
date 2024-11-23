@@ -5,7 +5,7 @@ from PIL import Image, ImageEnhance
 import os
 
 # List of image file paths
-image_paths = [r"C:\Users\Misra\Documents\miniprojectImg\fingerprint-1427210.jpg"]  # Add more paths as needed
+image_paths = [r"File Path"]  # Add more paths as needed
 
 # Define crop dimensions (width and height)
 crop_width, crop_height = 1000, 1000  # Adjust as needed for your fingerprint images
