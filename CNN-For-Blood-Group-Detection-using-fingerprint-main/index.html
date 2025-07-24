@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Group Detection</title>
+    <style>
+        /* Simplified CSS with defaults */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1,
+        h2 {
+            font-weight: bold;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label.custom-file-input {
+            display: inline-block;
+            background-color: #2575fc;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button {
+            background-color: #6a11cb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5910aa;
+        }
+
+        #result,
+        #error {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        #result {
+            background-color: rgba(76, 175, 80, 0.8);
+        }
+
+        #error {
+            background-color: rgba(244, 67, 54, 0.8);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .file-preview img {
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 200px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Blood Group Detection</h1>
+            <p>Upload your fingerprint image below to detect your blood group.</p>
+
+            <form id="uploadForm">
+                <label for="fileInput" class="custom-file-input">Choose Image</label>
+                <input type="file" id="fileInput" accept="image/*" required>
+                <button type="submit">Upload and Detect</button>
+            </form>
+
+            <div id="result" class="hidden">
+                <h2>Detected Blood Group</h2>
+                <p id="bloodGroup"></p>
+            </div>
+
+            <div id="error" class="hidden">
+                <h2>Error</h2>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Blood Group Detection System</p>
+    </footer>
+
+    <script>
+        // File preview
+        document.getElementById('fileInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const existingPreview = document.querySelector('.file-preview');
+                if (existingPreview) existingPreview.remove();
+
+                const previewContainer = document.createElement('div');
+                previewContainer.classList.add('file-preview');
+
+                const imgPreview = document.createElement('img');
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imgPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                previewContainer.appendChild(imgPreview);
+                event.target.insertAdjacentElement('afterend', previewContainer);
+            }
+        });
+
+        // Form submission
+        document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please upload a file!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('bloodGroup').textContent = result.blood_group;
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('error').classList.add('hidden');
+                } else {
+                    document.getElementById('errorMessage').textContent = result.error || 'Unknown error occurred.';
+                    document.getElementById('error').classList.remove('hidden');
+                    document.getElementById('result').classList.add('hidden');
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = 'Failed to connect to the server.';
+                document.getElementById('error').classList.remove('hidden');
+                document.getElementById('result').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>
